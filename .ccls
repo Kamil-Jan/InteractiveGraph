@@ -1,0 +1,6 @@
+clang++
+
+-I./include/
+%h -x
+%h c++-header
+%cpp -Wall -std=c++17
