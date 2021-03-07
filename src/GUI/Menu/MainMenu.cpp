@@ -6,6 +6,7 @@
 #include <Action/SetModeAction.h>
 #include <State/HelpState.h>
 #include <Mode/ShortestPathMode.h>
+#include <Mode/ArticulationPointsMode.h>
 #include <Mode/DeleteMode.h>
 #include <Mode/DrawMode.h>
 #include <Mode/EditMode.h>
@@ -23,7 +24,8 @@ MainMenu::MainMenu(int x, int y, int width, int height,
     int buttonHeight = getHeight() - padding;
 
     dropdown = new Dropdown(
-        { { "Shortest path", new SetModeAction(new ShortestPathMode()) } },
+        { { "Shortest path", new SetModeAction(new ShortestPathMode()) },
+          { "Cut vertices", new SetModeAction(new ArticulationPointsMode()) }},
         "Select algorithm",
         getX() + padding/2,
         getY() + padding/2,

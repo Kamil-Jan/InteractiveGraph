@@ -2,12 +2,14 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 #include <Graph/Vertex.h>
 
 using std::string;
 using std::pair;
 using std::map;
+using std::unordered_map;
 
 class Graph
 {
@@ -33,6 +35,7 @@ class Graph
         bool hasVertex(Vertex* vertex);
         Vertex* getVertex(int vertexId);
         vector<Vertex*> getVertices();
+        int getVerticesCount();
 
         void addEdge(Vertex* start, Vertex* end, int weight=1);
         void removeEdge(Vertex* start, Vertex* end);
@@ -41,6 +44,12 @@ class Graph
         void clear();
 
         vector<Vertex*> findTheShortestPath(Vertex* start, Vertex* end);
+        vector<Vertex*> findArticulationPoints(Vertex* root, int d,
+                                               unordered_map<Vertex*, int>& depth,
+                                               unordered_map<Vertex*, int>& low,
+                                               unordered_map<Vertex*, bool>& visited,
+                                               unordered_map<Vertex*, Vertex*>& parent);
+        vector<Vertex*> findArticulationPoints();
 
         SDL_Texture* createWeightTexture(int weight);
         SDL_Rect* createWeightRect(SDL_Texture* texture);

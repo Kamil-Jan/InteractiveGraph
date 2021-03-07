@@ -81,6 +81,12 @@ vector<Vertex*> Graph::getVertices()
     return vertices;
 }
 
+int Graph::getVerticesCount()
+{
+    Logger::debug("Graph::getVerticesCount");
+    return graphMap.size();
+}
+
 void Graph::addEdge(Vertex* start, Vertex* end, int weight)
 {
     Logger::debug("Graph::addEdge");
@@ -172,6 +178,62 @@ vector<Vertex*> Graph::findTheShortestPath(Vertex* start, Vertex* end)
         curVertex = prevVertices[curVertex];
     }
     return path;
+}
+
+vector<Vertex*> Graph::findArticulationPoints(Vertex* root, int d,
+                                              unordered_map<Vertex*, int>& depth,
+                                              unordered_map<Vertex*, int>& low,
+                                              unordered_map<Vertex*, bool>& visited,
+                                              unordered_map<Vertex*, Vertex*>& parent)
+{
+    vector<Vertex*> artPoints;
+
+    visited[root] = true;
+    depth[root] = d;
+    low[root] = d;
+
+    int childrenCount = 0;
+    for (Vertex* neighbor : root->getConnections()) {
+        if (!visited[neighbor]) {
+            parent[neighbor] = root;
+            childrenCount++;
+
+            vector<Vertex*> addedArtPoints = findArticulationPoints(
+                neighbor, d + 1, depth, low, visited, parent
+            );
+
+            artPoints.reserve(artPoints.size() + addedArtPoints.size());
+            artPoints.insert(artPoints.end(), addedArtPoints.begin(), addedArtPoints.end());
+
+            low[root] = (low[root] < low[neighbor])? low[root] : low[neighbor];
+            if (parent[root] && low[neighbor] >= depth[root] &&
+                find(artPoints.begin(), artPoints.end(), root) == artPoints.end())
+                    artPoints.push_back(root);
+        }
+        else if (neighbor != parent[root])
+            low[root] = (low[root] < depth[neighbor])? low[root] : depth[neighbor];
+    }
+
+    if (d == 1 && childrenCount > 1)
+        artPoints.push_back(root);
+
+    return artPoints;
+}
+
+vector<Vertex*> Graph::findArticulationPoints()
+{
+    unordered_map<Vertex*, int> depth;
+    unordered_map<Vertex*, int> low;
+    unordered_map<Vertex*, bool> visited;
+    unordered_map<Vertex*, Vertex*> parent;
+
+    vector<Vertex*> vertices = getVertices();
+    for (Vertex* vertex : vertices) {
+        visited[vertex] = false;
+        parent[vertex] = NULL;
+    }
+
+    return findArticulationPoints(vertices[0], 1, depth, low, visited, parent);
 }
 
 SDL_Texture* Graph::createWeightTexture(int weight)

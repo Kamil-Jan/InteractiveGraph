@@ -29,8 +29,6 @@ class Vertex : public Sprite
         void setId(int id);
         void setSelected();
         void resetSelected();
-        void setPathVertex();
-        void resetPathVertex();
 
         int getId();
         bool isSelected();

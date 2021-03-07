@@ -22,7 +22,7 @@ const int Game::VERTEX_RADIUS = 25;
 const int Game::VERTEX_BORDER = 3;
 const vector<int> Game::VERTEX_COLOR = { 105, 90, 250, 255 };
 const vector<int> Game::VERTEX_BORDER_COLOR = { 0, 0, 200, 255 };
-const vector<int> Game::SELECTED_VERTEX_COLOR = { 155, 85, 250, 255 };
+const vector<int> Game::SELECTED_VERTEX_COLOR = { 175, 85, 250, 255 };
 const vector<int> Game::PATH_VERTEX_COLOR = { 205, 85, 250, 255 };
 
 const int Game::EDGE_WIDTH = 3;
