@@ -1,5 +1,5 @@
 #pragma once
-#include <Graph/Vertex.h>
+#include <Graph/Edge.h>
 #include <Mode/Mode.h>
 
 class EditMode : public Mode
@@ -7,7 +7,7 @@ class EditMode : public Mode
     private:
         bool edit = false;
         std::string weightStr;
-        std::pair<Vertex*, Vertex*> editableEdge;
+        Edge* editableEdge;
         Vertex* selectedVertex = NULL;
         SDL_Texture* editTex;
 

@@ -30,7 +30,16 @@ void ShortestPathMode::resetSelectedVertex()
 
 void ShortestPathMode::resetPath()
 {
-    for (Vertex* vertex : path) vertex->resetSelected();
+    if (path.empty()) return;
+
+    path[0]->resetSelected();
+    Graph* graph = Graph::getInstance();
+    for (size_t i=0; i < path.size() - 1; i++) {
+        path[i+1]->resetSelected();
+        graph->getEdge(path[i], path[i+1])->setLineTexture(
+            Game::getInstance()->getEdgeTexture()
+        );
+    }
     path.clear();
 }
 
@@ -67,13 +76,25 @@ void ShortestPathMode::update(float ticks)
 
     if (selectedVertex != NULL)
         selectedVertex->setSelected();
+
 }
 
 void ShortestPathMode::render()
 {
     SDL_Renderer* renderer = Game::getInstance()->getRenderer();
-    if (path.size() > 1)
-        Graph::getInstance()->drawPath(renderer, Game::EDGE_WIDTH, path);
+
+    if (path.size() <= 1) return;
+
+    Graph* graph = Graph::getInstance();
+    path[0]->setSelected();
+    for (size_t i=0; i < path.size() - 1; i++) {
+        Edge* edge = graph->getEdge(path[i], path[i + 1]);
+        edge->setLineTexture(Game::getInstance()->getPathEdgeTexture());
+        edge->drawEdge(renderer, Game::EDGE_WIDTH);
+        path[i+1]->setSelected();
+    }
+
+    for (Vertex* vertex : path) vertex->render();
 }
 
 void ShortestPathMode::quit()

@@ -16,9 +16,7 @@ Graph::Graph()
 
 Graph::~Graph()
 {
-    for (auto kv : connectionsTexMap) {
-        SDL_DestroyTexture(kv.second);
-    }
+    Logger::debug("Graph::~Graph");
 }
 
 Graph* Graph::getInstance()
@@ -39,9 +37,14 @@ void Graph::setCounter(int counter)
         throw std::runtime_error("Graph::setCounter - invalid counter");
 }
 
-map<std::pair<Vertex*, Vertex*>, SDL_Rect*> Graph::getConnectionsRectMap()
+void Graph::setDirected()
 {
-    return connectionsRectMap;
+    directed = true;
+}
+
+void Graph::setUndirected()
+{
+    directed = false;
 }
 
 void Graph::addVertex(Vertex* vertex)
@@ -56,7 +59,7 @@ void Graph::addVertex(Vertex* vertex)
 void Graph::removeVertex(Vertex* vertex)
 {
     Logger::debug("Graph::removeVertex");
-    removeEdgesTo(vertex);
+    removeAdjacentEdges(vertex);
     graphMap.erase(vertex->getId());
 }
 
@@ -94,10 +97,30 @@ void Graph::addEdge(Vertex* start, Vertex* end, int weight)
     addVertex(end);
     start->addNeighbor(end, weight);
 
-    SDL_Texture* texture = createWeightTexture(weight);
-    connectionsTexMap[std::make_pair(start, end)] = texture;
-    connectionsRectMap[std::make_pair(start, end)] =
-        createWeightRect(texture);
+    Edge* edge = new Edge(start, end, weight, directed,
+                          Game::getInstance()->getEdgeTexture());
+    edgesMap[std::make_pair(start, end)] = edge;
+
+    if (!directed) {
+        end->addNeighbor(start, weight);
+        edgesMap[std::make_pair(end, start)] = edge;
+    }
+}
+
+Edge* Graph::getEdge(Vertex* start, Vertex* end)
+{
+    return edgesMap[std::make_pair(start, end)];
+}
+
+void Graph::setEdgeWeight(Vertex* start, Vertex* end, int weight)
+{
+    start->setNeighborWeight(end, weight);
+    Edge* edge = edgesMap[std::make_pair(start, end)];
+    edge->setWeight(weight);
+    if (!edge->isDirected()) {
+        end->setNeighborWeight(start, weight);
+        edgesMap[std::make_pair(end, start)]->setWeight(weight);
+    }
 }
 
 void Graph::removeEdge(Vertex* start, Vertex* end)
@@ -105,8 +128,11 @@ void Graph::removeEdge(Vertex* start, Vertex* end)
     Logger::debug("Graph::removeEdge");
     if (start->hasNeighbor(end)) {
         start->removeNeighbor(end);
-        connectionsTexMap.erase(std::make_pair(start, end));
-        connectionsRectMap.erase(std::make_pair(start, end));
+        if (!edgesMap[std::make_pair(start, end)]->isDirected()) {
+            end->removeNeighbor(start);
+            edgesMap.erase(std::make_pair(end, start));
+        }
+        edgesMap.erase(std::make_pair(start, end));
     }
 }
 
@@ -116,17 +142,20 @@ bool Graph::hasEdge(Vertex* start, Vertex* end)
     return start->hasNeighbor(end);
 }
 
-void Graph::removeEdgesTo(Vertex* vertex)
+void Graph::removeAdjacentEdges(Vertex* vertex)
 {
     Logger::debug("Graph::removeEdgesTo");
-    for (auto kv : graphMap)
+    for (auto kv : graphMap) {
         removeEdge(kv.second, vertex);
+        removeEdge(vertex, kv.second);
+    }
 }
 
 void Graph::clear()
 {
     Logger::debug("Graph::clear");
     graphMap.clear();
+    edgesMap.clear();
     counter = 0;
 }
 
@@ -236,174 +265,6 @@ vector<Vertex*> Graph::findArticulationPoints()
     return findArticulationPoints(vertices[0], 1, depth, low, visited, parent);
 }
 
-SDL_Texture* Graph::createWeightTexture(int weight)
-{
-    SDL_Renderer* renderer = Game::getInstance()->getRenderer();
-    vector<int> textColorVector = Game::EDGE_COLOR;
-    SDL_Color txtColor = {
-        (Uint8) textColorVector[0],
-        (Uint8) textColorVector[1],
-        (Uint8) textColorVector[2]
-    };
-
-    string weigthStr = (weight > 0)? std::to_string(weight) : " ";
-    SDL_Surface* weightSurface = TTF_RenderText_Solid(
-        Game::getInstance()->getFont(),
-        weigthStr.c_str(),
-        txtColor
-    );
-
-    int padding = 6;
-    SDL_Texture* weightTexture = SDL_CreateTexture(
-        renderer,
-        SDL_PIXELFORMAT_RGBA8888,
-        SDL_TEXTUREACCESS_TARGET,
-        weightSurface->w + padding,
-        weightSurface->h + padding
-    );
-
-    SDL_SetRenderTarget(renderer, weightTexture);
-    vector<int> bgColorVector = Game::BG_COLOR;
-    SDL_SetRenderDrawColor(
-        renderer,
-        bgColorVector[0],
-        bgColorVector[1],
-        bgColorVector[2],
-        bgColorVector[3]
-    );
-    SDL_RenderClear(renderer);
-
-    SDL_Rect textRect;
-    textRect.w = weightSurface->w;
-    textRect.h = weightSurface->h;
-    textRect.x = padding/2;
-    textRect.y = padding/2;
-
-    SDL_RenderCopy(
-        renderer,
-        SDL_CreateTextureFromSurface(renderer, weightSurface),
-        NULL,
-        &textRect
-    );
-
-    SDL_SetRenderTarget(renderer, NULL);
-    SDL_FreeSurface(weightSurface);
-    return weightTexture;
-}
-
-SDL_Rect* Graph::createWeightRect(SDL_Texture* texture)
-{
-    int width, height;
-    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-
-    SDL_Rect* weightRect = new SDL_Rect;
-    weightRect->w = width;
-    weightRect->h = height;
-    return weightRect;
-}
-
-void Graph::setWeightTexture(Vertex* start, Vertex* end, SDL_Texture* texture)
-{
-    connectionsTexMap[std::make_pair(start, end)] = texture;
-}
-
-void Graph::setWeightRect(Vertex* start, Vertex* end, SDL_Rect* rect)
-{
-    connectionsRectMap[std::make_pair(start, end)] = rect;
-}
-
-void Graph::drawWeight(SDL_Renderer* renderer, Vertex* start, Vertex* end)
-{
-    int x1 = start->getX();
-    int y1 = start->getY();
-    int x2 = end->getX();
-    int y2 = end->getY();
-
-    SDL_Rect* weightRect = connectionsRectMap[std::make_pair(start, end)];
-    weightRect->x = x1 + (x2 - x1)/2 - weightRect->w/2;
-    weightRect->y = y1 + (y2 - y1)/2 - weightRect->h/2;
-
-    int angle = 90 - 180 / 3.1415926 * atan2(x2 - x1, y2 - y1);
-    if (angle > 90)
-        angle += 180;
-
-    SDL_RenderCopyEx(
-        renderer,
-        connectionsTexMap[std::make_pair(start, end)],
-        NULL, weightRect,
-        angle,
-        NULL, SDL_FLIP_NONE
-    );
-}
-
-void Graph::drawArrows(SDL_Renderer* renderer, SDL_Texture* edgeTexture, Vertex* start, Vertex* end, int edgeWidth)
-{
-    int x1 = start->getX();
-    int y1 = start->getY();
-    int x2 = end->getX();
-    int y2 = end->getY();
-
-    float distance = Util::calculateDistance(x1, y1, x2, y2);
-    int deltaX = (Game::VERTEX_RADIUS * (x1 - x2)) / (distance);
-    int deltaY = (Game::VERTEX_RADIUS * (y1 - y2)) / (distance);
-    int interceptX = x2 + deltaX;
-    int interceptY = y2 + deltaY;
-
-    float edgeAngle = atan((float) (y2 - y1) / (x2 - x1));
-    float alpha = edgeAngle + Game::ARROW_LINE_ANGLE;
-    float betha = edgeAngle - Game::ARROW_LINE_ANGLE;
-
-    int line1X, line1Y, line2X, line2Y;
-    if (x2 < x1) {
-        line1X = interceptX + Game::ARROW_LINE_LENGTH * cos(alpha);
-        line1Y = interceptY + Game::ARROW_LINE_LENGTH * sin(alpha);
-        line2X = interceptX + Game::ARROW_LINE_LENGTH * cos(betha);
-        line2Y = interceptY + Game::ARROW_LINE_LENGTH * sin(betha);
-    } else {
-        line1X = interceptX - Game::ARROW_LINE_LENGTH * cos(alpha);
-        line1Y = interceptY - Game::ARROW_LINE_LENGTH * sin(alpha);
-        line2X = interceptX - Game::ARROW_LINE_LENGTH * cos(betha);
-        line2Y = interceptY - Game::ARROW_LINE_LENGTH * sin(betha);
-    }
-
-    Util::drawLine(renderer, edgeTexture,
-                   interceptX, interceptY,
-                   line1X, line1Y,
-                   edgeWidth);
-    Util::drawLine(renderer, edgeTexture,
-                   interceptX, interceptY,
-                   line2X, line2Y,
-                   edgeWidth);
-}
-
-void Graph::drawEdge(SDL_Renderer* renderer, SDL_Texture* edgeTexture,
-                     Vertex* start, Vertex* end,
-                     int edgeWidth)
-{
-    Logger::debug("Graph::drawEdge");
-
-    int x1 = start->getX();
-    int y1 = start->getY();
-    int x2 = end->getX();
-    int y2 = end->getY();
-
-    Util::drawLine(renderer, edgeTexture, x1, y1, x2, y2, edgeWidth);
-    drawArrows(renderer, edgeTexture, start, end, edgeWidth);
-    drawWeight(renderer, start, end);
-}
-
-void Graph::drawPath(SDL_Renderer* renderer, int edgeWidth, vector<Vertex*> path)
-{
-    Logger::debug("Graph::drawPath");
-    for (size_t i=0; i < path.size() - 1; i++)
-        drawEdge(renderer,
-                 Game::getInstance()->getPathEdgeTexture(),
-                 path[i], path[i + 1], edgeWidth);
-
-    for (Vertex* vertex : path)
-        vertex->render();
-}
-
 void Graph::update(float ticks)
 {
     Logger::debug("Graph::update");
@@ -414,14 +275,13 @@ void Graph::update(float ticks)
 void Graph::render()
 {
     Logger::debug("Graph::render");
-    SDL_Renderer* renderer = Game::getInstance()->getRenderer();
 
-    for (auto kv : graphMap) {
-        Vertex* vertex = kv.second;
-        for (Vertex* neighbor : vertex->getConnections())
-            drawEdge(renderer,
-                     Game::getInstance()->getEdgeTexture(),
-                     vertex, neighbor, Game::EDGE_WIDTH);
+    for (auto kv : edgesMap) {
+        Vertex* start = kv.first.first;
+        Vertex* end = kv.first.second;
+        if (!kv.second->isDirected() && start->getId() > end->getId())
+            continue;
+        kv.second->render();
     }
 
     for (auto kv : graphMap) kv.second->render();

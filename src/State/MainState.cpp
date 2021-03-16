@@ -7,7 +7,7 @@
 #include <InputManager.h>
 #include <State/MainState.h>
 #include <State/HelpState.h>
-#include <GUI/Menu/MainMenu.h>
+#include <GUI/Menu/TopMenu.h>
 #include <Action/PushStateAction.h>
 #include <Mode/DrawMode.h>
 #include <Mode/ShortestPathMode.h>
@@ -19,8 +19,16 @@ MainState::MainState() : State()
     Logger::debug("MainState::MainState");
     instance = instance? instance : this;
 
-    mainMenu = new MainMenu(
+    mainMenu = new TopMenu(
         0, 0, SCREEN_WIDTH, 60,
+        Game::MENU_BORDER_WIDTH,
+        Game::MENU_BG_COLOR,
+        Game::MENU_BORDER_COLOR
+    );
+
+    bottomMenu = new BottomMenu(
+        0, SCREEN_HEIGHT - 60,
+        SCREEN_WIDTH, 60,
         Game::MENU_BORDER_WIDTH,
         Game::MENU_BG_COLOR,
         Game::MENU_BORDER_COLOR
@@ -34,9 +42,14 @@ MainState* MainState::getInstance()
     return instance;
 }
 
-MainMenu* MainState::getMainMenu()
+TopMenu* MainState::getMainMenu()
 {
     return mainMenu;
+}
+
+BottomMenu* MainState::getBottomMenu()
+{
+    return bottomMenu;
 }
 
 Mode* MainState::getCurrentMode()
@@ -47,6 +60,16 @@ Mode* MainState::getCurrentMode()
 void MainState::setCurrentMode(Mode* mode)
 {
     currentMode = mode;
+}
+
+bool MainState::isAroundMenus(int x, int y)
+{
+    return mainMenu->isAround(x, y) || bottomMenu->isAround(x, y);
+}
+
+bool MainState::isInsideMenusWidgets(int x, int y)
+{
+    return mainMenu->isInsideWidgets(x, y) || bottomMenu->isInsideWidgets(x, y);
 }
 
 vector<Vertex*> MainState::getSpritesUnderMouse(int mouseX, int mouseY)
@@ -69,6 +92,7 @@ void MainState::update()
     if (currentMode) currentMode->update(SDL_GetTicks());
     Graph::getInstance()->update(SDL_GetTicks());
     mainMenu->update(SDL_GetTicks());
+    bottomMenu->update(SDL_GetTicks());
 }
 
 void MainState::render()
@@ -85,5 +109,6 @@ void MainState::render()
     Graph::getInstance()->render();
     if (currentMode) currentMode->render();
     mainMenu->render();
+    bottomMenu->render();
 }
 

@@ -31,6 +31,7 @@ Vertex::Vertex(int id, int x, int y, int radius, int border) :
 
 Vertex::~Vertex()
 {
+    Logger::debug("Vertex::~Vertex");
     SDL_DestroyTexture(idTexture);
 }
 
@@ -45,6 +46,11 @@ void Vertex::setId(int id)
 void Vertex::setSelected()
 {
     selected = true;
+}
+
+void Vertex::setNeighborWeight(Vertex* neighbor, int weight)
+{
+    adjacent[neighbor] = weight;
 }
 
 void Vertex::resetSelected()
@@ -98,7 +104,7 @@ int Vertex::getNeighborWeight(Vertex* neighbor)
 bool Vertex::isInside(int x, int y)
 {
     Logger::debug("Vertex::isInside");
-    return (Util::calculateDistance(getX(), getY(), x, y) <= radius);
+    return (Util::calculateDistance(getX(), getY(), x, y) <= (double) radius);
 }
 
 void Vertex::update(float ticks)

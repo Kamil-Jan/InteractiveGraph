@@ -30,6 +30,7 @@ HelpState::HelpState() : State()
 
 HelpState::~HelpState()
 {
+    Logger::debug("HelpState::~HelpState");
     SDL_DestroyTexture(shortcutsImg);
 }
 

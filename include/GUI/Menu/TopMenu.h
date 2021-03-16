@@ -4,18 +4,16 @@
 #include <GUI/Widget/Dropdown.h>
 #include <GUI/Widget/PressedButton.h>
 
-class MainMenu : public Menu
+class TopMenu : public Menu
 {
     private:
         Dropdown* dropdown;
         PressedButton* drawGraphButton;
 
     public:
-        MainMenu(int x, int y, int width, int height,
+        TopMenu(int x, int y, int width, int height,
                  int borderWidth, vector<int> bgColor,
                  vector<int> borderColor);
         std::string getSelectedAlgorithm();
-        void resetWidgets();
-        void update(float ticks) override;
 };
 

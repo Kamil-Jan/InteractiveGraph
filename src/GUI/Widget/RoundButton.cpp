@@ -1,5 +1,6 @@
 #include <Game.h>
 #include <Util.h>
+#include <Logger.h>
 #include <GUI/Widget/RoundButton.h>
 
 RoundButton::RoundButton(SDL_Texture* innerContentTex,
@@ -29,6 +30,7 @@ RoundButton::RoundButton(SDL_Texture* innerContentTex,
 
 RoundButton::~RoundButton()
 {
+    Logger::debug("RoundButton::~RoundButton");
     SDL_DestroyTexture(circleTex);
     SDL_DestroyTexture(selectedCircleTex);
     SDL_DestroyTexture(innerContentTex);

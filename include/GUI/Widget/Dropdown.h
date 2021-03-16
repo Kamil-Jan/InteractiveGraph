@@ -1,3 +1,4 @@
+#pragma once
 #include <SDL2/SDL.h>
 #include <GUI/Widget/Widget.h>
 #include <Action/Action.h>

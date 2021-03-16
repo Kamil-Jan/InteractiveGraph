@@ -27,6 +27,7 @@ EditMode::EditMode() : Mode()
 
 EditMode::~EditMode()
 {
+    Logger::debug("EditMode::~EditMode");
     SDL_DestroyTexture(editTex);
 }
 
@@ -36,29 +37,14 @@ void EditMode::manageLeftMouseButtonClick(int mouseX, int mouseY, vector<Vertex*
     Graph* graph = Graph::getInstance();
     if (InputManager::getInstance()->mousePressed(1) && edit) {
         edit = false;
-        if (weightStr != "") {
-            graph->removeEdge(
-                editableEdge.first,
-                editableEdge.second
-            );
-            graph->addEdge(
-                editableEdge.first, editableEdge.second,
+        if (weightStr != "" && weightStr != "0") {
+            graph->setEdgeWeight(
+                editableEdge->getStart(),
+                editableEdge->getEnd(),
                 std::stoi(weightStr)
             );
         } else {
-            SDL_Texture* prevTexture = graph->createWeightTexture(
-                editableEdge.first->getNeighborWeight(editableEdge.second)
-            );
-            graph->setWeightTexture(
-                editableEdge.first,
-                editableEdge.second,
-                prevTexture
-            );
-            graph->setWeightRect(
-                editableEdge.first,
-                editableEdge.second,
-                graph->createWeightRect(prevTexture)
-            );
+            editableEdge->setWeight(editableEdge->getWeight());
         }
     }
 }
@@ -85,7 +71,7 @@ void EditMode::manageSelectedVertex(vector<Vertex*> spritesUnderMouse)
                 Logger::debug("EditMode::manageSelectedVertex - remove edge");
                 edit = true;
                 weightStr = "";
-                editableEdge = std::make_pair(selectedVertex, vertexUnderMouse);
+                editableEdge = graph->getEdge(selectedVertex, vertexUnderMouse);
             }
             selectedVertex = NULL;
         }
@@ -140,28 +126,19 @@ void EditMode::getUserInput()
     weightStr += addedDigit;
 
     int weight = (weightStr != "")? std::stoi(weightStr) : 0;
-    Graph* graph = Graph::getInstance();
 
-    SDL_Texture* weightTexture = graph->createWeightTexture(weight);
-    graph->setWeightTexture(
-        editableEdge.first,
-        editableEdge.second,
-        weightTexture
-    );
+    SDL_Texture* weightTexture = Edge::createWeightTexture(weight);
+    editableEdge->setWeightTexture(weightTexture);
 
-    SDL_Rect* prevWeightRect = graph->getConnectionsRectMap()[editableEdge];
-    SDL_Rect* weightRect = graph->createWeightRect(weightTexture);
+    SDL_Rect prevWeightRect = editableEdge->getWeightRect();
+    SDL_Rect weightRect = Edge::createWeightRect(weightTexture);
 
-    int deltaWidth = weightRect->w - prevWeightRect->w;
-    int deltaHeight = weightRect->h - prevWeightRect->h;
-    weightRect->x = prevWeightRect->x - (deltaWidth)/2;
-    weightRect->y = prevWeightRect->y - (deltaHeight)/2;
+    int deltaWidth = weightRect.w - prevWeightRect.w;
+    int deltaHeight = weightRect.h - prevWeightRect.h;
+    weightRect.x = prevWeightRect.x - (deltaWidth)/2;
+    weightRect.y = prevWeightRect.y - (deltaHeight)/2;
 
-    graph->setWeightRect(
-        editableEdge.first,
-        editableEdge.second,
-        weightRect
-    );
+    editableEdge->setWeightRect(weightRect);
 }
 
 void EditMode::quit()
@@ -175,34 +152,30 @@ void EditMode::render()
 {
     if (!edit) return;
 
+    SDL_Renderer* renderer = Game::getInstance()->getRenderer();
     int padding = 4;
-    SDL_Rect* weightRect = Graph::getInstance()->getConnectionsRectMap()[editableEdge];
+    SDL_Rect weightRect = editableEdge->getWeightRect();
     SDL_Rect borderRect;
-    borderRect.w = weightRect->w + padding;
-    borderRect.h = weightRect->h + padding;
-    borderRect.x = weightRect->x - padding/2;
-    borderRect.y = weightRect->y - padding/2;
+    borderRect.w = weightRect.w + padding;
+    borderRect.h = weightRect.h + padding;
+    borderRect.x = weightRect.x - padding/2;
+    borderRect.y = weightRect.y - padding/2;
 
-    int x1 = editableEdge.first->getX();
-    int y1 = editableEdge.first->getY();
-    int x2 = editableEdge.second->getX();
-    int y2 = editableEdge.second->getY();
+    int x1 = editableEdge->getStart()->getX();
+    int y1 = editableEdge->getStart()->getY();
+    int x2 = editableEdge->getEnd()->getX();
+    int y2 = editableEdge->getEnd()->getY();
     int angle = 90 - 180 / 3.1415926 * atan2(x2 - x1, y2 - y1);
     if (angle > 90)
         angle += 180;
 
     SDL_RenderCopyEx(
-        Game::getInstance()->getRenderer(),
-        editTex,
+        renderer, editTex,
         NULL, &borderRect,
         angle, NULL,
         SDL_FLIP_NONE
     );
 
-    Graph::getInstance()->drawWeight(
-        Game::getInstance()->getRenderer(),
-        editableEdge.first,
-        editableEdge.second
-    );
+    editableEdge->drawWeight(renderer);
 }
 

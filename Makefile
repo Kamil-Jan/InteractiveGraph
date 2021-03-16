@@ -4,7 +4,7 @@ OBJ_DIR := obj
 
 LINUX_CC := g++
 WINDOWS_CC := i686-w64-mingw32-g++
-CC := $(LINUX_CC)
+CC := $(WINDOWS_CC)
 
 ifeq ($(CC), $(LINUX_CC))
 	OBJ_EXT := o

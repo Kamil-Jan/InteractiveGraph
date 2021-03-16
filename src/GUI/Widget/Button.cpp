@@ -41,6 +41,7 @@ Button::Button(string text, Action* action,
 
 Button::~Button()
 {
+    Logger::debug("Button::~Button");
     SDL_DestroyTexture(textTexture);
 }
 

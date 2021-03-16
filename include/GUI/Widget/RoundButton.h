@@ -1,3 +1,4 @@
+#pragma once
 #include <SDL2/SDL.h>
 #include <vector>
 #include <GUI/Widget/Button.h>

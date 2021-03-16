@@ -54,6 +54,12 @@ bool Menu::isInsideWidgets(int x, int y)
     return false;
 }
 
+void Menu::resetWidgets()
+{
+    for (Widget* widget : widgets.getSprites())
+        widget->reset();
+}
+
 void Menu::update(float ticks)
 {
     Logger::debug("Menu::update");

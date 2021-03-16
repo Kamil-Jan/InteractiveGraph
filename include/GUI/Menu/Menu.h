@@ -18,6 +18,7 @@ class Menu : public Sprite
              int borderWidth, vector<int> bgColor,
              vector<int> borderColor);
         void addWidget(Widget* widget);
+        void resetWidgets();
         bool isInside(int x, int y);
         bool isInsideWidgets(int x, int y);
         bool isAround(int x, int y);

@@ -28,6 +28,7 @@ class Vertex : public Sprite
 
         void setId(int id);
         void setSelected();
+        void setNeighborWeight(Vertex* neighbor, int weight);
         void resetSelected();
 
         int getId();

@@ -58,7 +58,7 @@ Game::Game(string title)
         );
 
     // Load font
-    font = TTF_OpenFont("res/LiberationMono.ttf", 23);
+    font = TTF_OpenFont("res/LiberationMono.ttf", 22);
     if (font == NULL)
         throw std::runtime_error("Vertex::Vertex - invalid font path");
 
@@ -127,6 +127,7 @@ Game::Game(string title)
 
 Game::~Game()
 {
+    Logger::debug("Game::~Game");
     SDL_DestroyTexture(vertexTexture);
     SDL_DestroyTexture(selectedVertexTexture);
     SDL_DestroyTexture(edgeTexture);

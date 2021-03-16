@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <Graph/Vertex.h>
+#include <Graph/Edge.h>
 
 using std::string;
 using std::pair;
@@ -16,9 +17,9 @@ class Graph
     private:
         static Graph* instance;
         map<int, Vertex*> graphMap;
-        map<pair<Vertex*, Vertex*>, SDL_Texture*> connectionsTexMap;
-        map<pair<Vertex*, Vertex*>, SDL_Rect*> connectionsRectMap;
+        map<std::pair<Vertex*, Vertex*>, Edge*> edgesMap;
         int counter = 0;
+        bool directed = true;
 
     public:
         Graph();
@@ -28,7 +29,8 @@ class Graph
         void setCounter(int counter);
         int getCounter();
 
-        map<pair<Vertex*, Vertex*>, SDL_Rect*> getConnectionsRectMap();
+        void setDirected();
+        void setUndirected();
 
         void addVertex(Vertex* vertex);
         void removeVertex(Vertex* vertex);
@@ -38,9 +40,12 @@ class Graph
         int getVerticesCount();
 
         void addEdge(Vertex* start, Vertex* end, int weight=1);
+        Edge* getEdge(Vertex* start, Vertex* end);
+        void setEdgeWeight(Vertex* start, Vertex* end, int weight);
         void removeEdge(Vertex* start, Vertex* end);
+        void removeAdjacentEdges(Vertex* vertex);
         bool hasEdge(Vertex* start, Vertex* end);
-        void removeEdgesTo(Vertex* vertex);
+
         void clear();
 
         vector<Vertex*> findTheShortestPath(Vertex* start, Vertex* end);
@@ -50,19 +55,6 @@ class Graph
                                                unordered_map<Vertex*, bool>& visited,
                                                unordered_map<Vertex*, Vertex*>& parent);
         vector<Vertex*> findArticulationPoints();
-
-        SDL_Texture* createWeightTexture(int weight);
-        SDL_Rect* createWeightRect(SDL_Texture* texture);
-        void setWeightTexture(Vertex* start, Vertex* end, SDL_Texture* texture);
-        void setWeightRect(Vertex* start, Vertex* end, SDL_Rect* rect);
-        void drawWeight(SDL_Renderer* renderer, Vertex* start, Vertex* end);
-        void drawArrows(SDL_Renderer* renderer, SDL_Texture* edgeTexture,
-                        Vertex* start, Vertex* end,
-                        int edgeWidth);
-        void drawEdge(SDL_Renderer* renderer, SDL_Texture* edgeTexture,
-                      Vertex* start, Vertex* end,
-                      int edgeWidth);
-        void drawPath(SDL_Renderer* renderer, int edgeWidth, vector<Vertex*> path);
 
         void update(float ticks);
         void render();

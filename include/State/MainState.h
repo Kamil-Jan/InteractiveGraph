@@ -6,7 +6,8 @@
 #include <State/State.h>
 #include <Mode/Mode.h>
 #include <GUI/Widget/Button.h>
-#include <GUI/Menu/MainMenu.h>
+#include <GUI/Menu/TopMenu.h>
+#include <GUI/Menu/BottomMenu.h>
 
 using std::stack;
 using std::unordered_map;
@@ -17,15 +18,20 @@ class MainState: public State
         static MainState* instance;
 
         Mode* currentMode;
-        MainMenu* mainMenu;
+        TopMenu* mainMenu;
+        BottomMenu* bottomMenu;
 
     public:
         MainState();
 
         static MainState* getInstance();
-        MainMenu* getMainMenu();
+        TopMenu* getMainMenu();
+        BottomMenu* getBottomMenu();
         Mode* getCurrentMode();
         void setCurrentMode(Mode* mode);
+
+        bool isAroundMenus(int x, int y);
+        bool isInsideMenusWidgets(int x, int y);
 
         vector<Vertex*> getSpritesUnderMouse(int mouseX, int mouseY);
         void removeVertex(Vertex* vertex);

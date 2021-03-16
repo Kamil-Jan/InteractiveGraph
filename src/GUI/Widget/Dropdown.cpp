@@ -87,6 +87,7 @@ Dropdown::Dropdown(unordered_map<string, Action*> items,
 
 Dropdown::~Dropdown()
 {
+    Logger::debug("Dropdown::~Dropdown");
     for (auto tex : textureMap)
         SDL_DestroyTexture(tex.second);
 }

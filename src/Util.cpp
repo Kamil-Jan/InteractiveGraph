@@ -4,7 +4,16 @@
 #include <math.h>
 #include <Logger.h>
 
-float Util::calculateDistance(int x1, int y1, int x2, int y2)
+double Util::calculateDistance(int x1, int y1, int x2, int y2)
+{
+    Logger::debug("Util::calculateDistance");
+    return sqrt(
+        (x2 - x1) * (x2 - x1) +
+        (y2 - y1) * (y2 - y1)
+    );
+}
+
+double Util::calculateDistanceF(double x1, double y1, double x2, double y2)
 {
     Logger::debug("Util::calculateDistance");
     return sqrt(
@@ -106,6 +115,75 @@ void Util::drawLine(SDL_Renderer* renderer, SDL_Texture* lineTexture,
     rect.h = distance;
 
     SDL_RenderCopyEx(renderer, lineTexture, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
+}
+
+void Util::drawLineF(SDL_Renderer* renderer, SDL_Texture* lineTexture,
+                    double x1, double y1, double x2, double y2,
+                    int width)
+{
+    Logger::debug("Util::drawLineF");
+    double distance = calculateDistanceF(x1, y1, x2, y2);
+    double angle = 180.0 - 180.0 / 3.1415926 * atan2(x2 - x1, y2 - y1);
+
+    SDL_FRect rect;
+    rect.x = x1 + (x2 - x1)/2.0 + width/2.0;
+    rect.y = y1 + (y2 - y1)/2.0 - distance/2.0;
+    rect.w = width;
+    rect.h = distance;
+
+    SDL_RenderCopyExF(renderer, lineTexture, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
+}
+
+void Util::drawCurvedLine(SDL_Renderer* renderer,
+                          SDL_Texture* lineTexture,
+                          vector<int>& vx, vector<int>& vy,
+                          int steps, int width)
+{
+    int n = vx.size() - 1;
+    int binCoeff[n + 1];
+    binCoeff[0] = 1;
+    for (int k = 0; k < n; k++) {
+        binCoeff[k + 1] = (binCoeff[k] * (n - k)) / (k + 1);
+    }
+
+    double d = 1.0 / steps;
+    double prevX = vx[0];
+    double prevY = vy[0];
+    for (double t = 0.0; t <= 1.0; t += d) {
+        double x = 0;
+        double y = 0;
+        for (int i = 0; i <= n; i++) {
+            x += binCoeff[i] * pow(1.0 - t, n - i) * pow(t, i) * vx[i];
+            y += binCoeff[i] * pow(1.0 - t, n - i) * pow(t, i) * vy[i];
+        }
+
+        drawLineF(renderer, lineTexture, prevX, prevY, x, y, width);
+        prevX = x;
+        prevY = y;
+    }
+    drawLineF(renderer, lineTexture, prevX, prevY, vx[n], vy[n], width);
+}
+
+SDL_FPoint Util::getCurvedLinePoint(vector<int>& vx, vector<int>& vy, double t)
+{
+    int n = vx.size() - 1;
+    int binCoeff[n + 1];
+    binCoeff[0] = 1;
+    for (int k = 0; k < n; k++) {
+        binCoeff[k + 1] = (binCoeff[k] * (n - k)) / (k + 1);
+    }
+
+    double x = 0;
+    double y = 0;
+    for (int i = 0; i <= n; i++) {
+        x += binCoeff[i] * pow(1.0 - t, n - i) * pow(t, i) * vx[i];
+        y += binCoeff[i] * pow(1.0 - t, n - i) * pow(t, i) * vy[i];
+    }
+
+    SDL_FPoint point;
+    point.x = x;
+    point.y = y;
+    return point;
 }
 
 void Util::drawRectWithBorder(SDL_Renderer* renderer,

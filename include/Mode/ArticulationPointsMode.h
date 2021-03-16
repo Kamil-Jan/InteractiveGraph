@@ -1,3 +1,4 @@
+#pragma once
 #include <Mode/Mode.h>
 #include <Graph/Vertex.h>
 
