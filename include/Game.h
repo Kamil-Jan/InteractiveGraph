@@ -9,8 +9,6 @@
 
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 750
-//#define SCREEN_WIDTH 800
-//#define SCREEN_HEIGHT 500
 #define FPS 60
 #define TICKS_PER_FRAME 1000 / FPS
 

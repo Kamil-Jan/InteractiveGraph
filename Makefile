@@ -4,7 +4,7 @@ OBJ_DIR := obj
 
 LINUX_CC := g++
 WINDOWS_CC := i686-w64-mingw32-g++
-CC := $(WINDOWS_CC)
+CC := $(LINUX_CC)
 
 ifeq ($(CC), $(LINUX_CC))
 	OBJ_EXT := o
@@ -38,11 +38,14 @@ $(OBJ_DIR)/%.$(OBJ_EXT): $(SRC_DIR)/%.cpp
 	$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
 	@echo ""
 
+# recipe to build the project
+install: $(TARGET)
+
 # recipe to clean the workspace
 clean:
 	rm -r $(OBJ_DIR)
 
 -include $(DEPS)
 
-.PHONY: clean
+.PHONY: install clean
 

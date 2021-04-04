@@ -1,5 +1,6 @@
 #include <Logger.h>
 #include <GUI/Widget/Widget.h>
+#include <GUI/Widget/Label.h>
 #include <Graph/Vertex.h>
 #include <Sprite/SpriteGroup.h>
 
@@ -91,4 +92,5 @@ void SpriteGroup<T>::render()
 
 template class SpriteGroup<Widget>;
 template class SpriteGroup<Vertex>;
+template class SpriteGroup<Label>;
 

@@ -30,7 +30,7 @@ Dropdown::Dropdown(unordered_map<string, Action*> items,
 
     this->defaultText = defaultText;
 
-    SDL_Surface* defaultTextSurface = TTF_RenderText_Solid(
+    SDL_Surface* defaultTextSurface = TTF_RenderText_Blended(
         Game::getInstance()->getFont(),
         defaultText.c_str(),
         { 255, 255, 255 }
@@ -152,7 +152,7 @@ void Dropdown::processItems(unordered_map<string, Action*> items)
 
     for (auto item : items) {
         string itemStr = item.first;
-        textSurface = TTF_RenderText_Solid(
+        textSurface = TTF_RenderText_Blended(
             Game::getInstance()->getFont(),
             itemStr.c_str(), { 255, 255, 255 }
         );

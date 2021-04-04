@@ -15,7 +15,7 @@ Vertex::Vertex(int id, int x, int y, int radius, int border) :
     this->radius = radius;
     this->circleBorder = border;
 
-    SDL_Surface* idSurface = TTF_RenderText_Solid(
+    SDL_Surface* idSurface = TTF_RenderText_Blended(
         Game::getInstance()->getFont(),
         std::to_string(id).c_str(),
         { 255, 255, 255, 255 }

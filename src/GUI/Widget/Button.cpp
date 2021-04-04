@@ -22,7 +22,7 @@ Button::Button(string text, Action* action,
     this->borderColor = borderColor;
 
     if (!text.empty()) {
-        SDL_Surface* textSurface = TTF_RenderText_Solid(
+        SDL_Surface* textSurface = TTF_RenderText_Blended(
             Game::getInstance()->getFont(),
             text.c_str(), { 255, 255, 255, 255 }
         );

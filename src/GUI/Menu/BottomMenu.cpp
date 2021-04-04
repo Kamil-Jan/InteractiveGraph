@@ -42,13 +42,3 @@ BottomMenu::BottomMenu(int x, int y, int width, int height,
     );
 }
 
-void BottomMenu::setDescription(std::string descr)
-{
-    description = descr;
-}
-
-std::string BottomMenu::getDescription()
-{
-    return description;
-}
-

@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <Mode/DrawMode.h>
 #include <State/MainState.h>
 #include <InputManager.h>
@@ -23,7 +21,7 @@ void DrawMode::quit()
 void DrawMode::manageLeftMouseButtonClick(int mouseX, int mouseY, vector<Vertex*> spritesUnderMouse)
 {
     Graph* graph = Graph::getInstance();
-    if (InputManager::getInstance()->mousePressed(1)) {
+    if (InputManager::getInstance()->mousePressed(1) && !InputManager::getInstance()->isKeyDown(SDLK_LSHIFT)) {
         if (!MainState::getInstance()->isAroundMenus(mouseX, mouseY) &&
                 !MainState::getInstance()->isInsideMenusWidgets(mouseX, mouseY) &&
                 spritesUnderMouse.empty()) {
