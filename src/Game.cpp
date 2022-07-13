@@ -78,15 +78,6 @@ Game::Game(string title)
             (string) SDL_GetError()
         );
 
-    // Create window surface
-    Logger::debug("Game::Game - initialize screen");
-    screen = SDL_GetWindowSurface(window);
-    if (screen == NULL)
-        throw std::runtime_error(
-            "Game::Game - cannot initialize screen!\n" +
-            (string) SDL_GetError()
-        );
-
     // Initialize Renderer
     Logger::debug("Game::Game - initialize renderer");
     Uint32 renderFlags = SDL_RENDERER_ACCELERATED|SDL_RENDERER_TARGETTEXTURE;
@@ -97,6 +88,14 @@ Game::Game(string title)
             (string) SDL_GetError()
         );
 
+    // Create window surface
+    Logger::debug("Game::Game - initialize screen");
+    screen = SDL_GetWindowSurface(window);
+    if (screen == NULL)
+        throw std::runtime_error(
+            "Game::Game - cannot initialize screen!\n" +
+            (string) SDL_GetError()
+        );
 
     vertexTexture = Util::createBorderedCircleTexture(
         renderer, VERTEX_RADIUS, VERTEX_BORDER,
